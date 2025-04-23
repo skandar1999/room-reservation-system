@@ -1,25 +1,16 @@
 from flask import Flask, jsonify
-
 import psycopg2
-
+import os
 
 app = Flask(__name__)
 
-
 def get_db_connection():
-
     return psycopg2.connect(
-
         dbname="reservation",
-
         user="postgres",
-
         password="secret",
-
-        host="localhost"
-
+        host=os.getenv("DATABASE_HOST", "localhost")
     )
-
 
 @app.route('/users', methods=['GET'])
 

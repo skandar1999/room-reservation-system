@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+
+  name: salle-service
+
+spec:
+
+  replicas: 2
+
+  selector:
+
+    matchLabels:
+
+      app: salle-service
+
+  template:
+
+    metadata:
+
+      labels:
+
+        app: salle-service
+
+    spec:
+
+      containers:
+
+      - name: salle-service
+
+        image: salle-service:latest
+
+        ports:
+
+        - containerPort: 5002
+
+        env:
+
+        - name: DATABASE_HOST
+
+          value: "postgres-service"
+
+        - name: KAFKA_BOOTSTRAP_SERVERS
+
+          value: "kafka-service:9092"
+
+---
+
+apiVersion: v1
+
+kind: Service
+
+metadata:
+
+  name: salle-service
+
+spec:
+
+  selector:
+
+    app: salle-service
+
+  ports:
+
+  - port: 5002
+
+    targetPort: 5002
+
+  type: ClusterIP 

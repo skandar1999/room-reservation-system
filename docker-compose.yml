@@ -1,0 +1,129 @@
+version: '3.8'
+
+services:
+
+  postgres:
+
+    image: postgres:latest
+
+    environment:
+
+      POSTGRES_PASSWORD: secret
+
+      POSTGRES_DB: reservation
+
+    ports:
+
+      - "5432:5432"
+
+    volumes:
+
+      - postgres_data:/var/lib/postgresql/data
+
+
+  zookeeper:
+
+    image: confluentinc/cp-zookeeper:latest
+
+    environment:
+
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+      ZOOKEEPER_TICK_TIME: 2000
+
+    ports:
+
+      - "2181:2181"
+
+
+  kafka:
+
+    image: confluentinc/cp-kafka:latest
+
+    depends_on:
+
+      - zookeeper
+
+    environment:
+
+      KAFKA_BROKER_ID: 1
+
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+    ports:
+
+      - "9092:9092"
+
+
+  user-service:
+
+    build:
+
+      context: ./user-service
+
+    ports:
+
+      - "5001:5001"
+
+    environment:
+
+      DATABASE_HOST: postgres
+
+    depends_on:
+
+      - postgres
+
+
+  salle-service:
+
+    build:
+
+      context: ./salle-service
+
+    ports:
+
+      - "5002:5002"
+
+    environment:
+
+      DATABASE_HOST: postgres
+
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+    depends_on:
+
+      - postgres
+
+      - kafka
+
+
+  reservation-service:
+
+    build:
+
+      context: ./reservation-service
+
+    ports:
+
+      - "5003:5003"
+
+    environment:
+
+      DATABASE_HOST: postgres
+
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+    depends_on:
+
+      - postgres
+
+      - kafka
+
+
+volumes:
+
+  postgres_data:
